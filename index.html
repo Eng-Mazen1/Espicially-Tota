@@ -3,21 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <title>Love Heart</title>
+    <!-- استدعاء خط مزخرف رومانسي من Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: #060208; overflow: hidden; font-family: Arial, sans-serif; }
         #overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #060208; display: flex; justify-content: center;
-            align-items: center; z-index: 10; cursor: pointer; color: #e60d2e;
-            font-size: 22px; font-weight: bold; border: 2px solid #e60d2e;
+            background: #060208; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 10; cursor: pointer;
+            transition: opacity 0.6s ease;
+        }
+        .text-btn {
+            font-family: 'Great Vibes', cursive, cursive;
+            font-size: 64px;
+            color: #e60d2e;
+            text-shadow: 0 0 15px rgba(230, 13, 46, 0.6), 0 0 25px rgba(230, 13, 46, 0.4);
+            animation: pulse 1.8s infinite ease-in-out;
+            user-select: none;
+        }
+        .sub-text {
+            color: #888;
+            font-size: 14px;
+            margin-top: 15px;
+            letter-spacing: 1px;
+            font-family: Arial, sans-serif;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 25px rgba(230, 13, 46, 0.9), 0 0 35px rgba(230, 13, 46, 0.6); }
+            100% { transform: scale(1); opacity: 0.9; }
         }
         canvas { display: block; }
     </style>
 </head>
 <body>
-    <div id="overlay">اضغط هنا للبدء وتشغيل الأغنية 🎵</div>
+    <div id="overlay">
+        <div class="text-btn">Especially Tota</div>
+        <div class="sub-text">Tap anywhere to start 🎵</div>
+    </div>
+    
     <canvas id="canvas"></canvas>
+    
+    <!-- اسم ملف الأغنية المحدد -->
     <audio id="bgMusic" src="fy 3ny enty ahla.mp3" loop></audio>
 
     <script>
@@ -27,8 +57,8 @@
         
         const SC = 20;
         const OY = 20;
-        const GAP = 15; // زيادة المسافة بين الكلمات أفقياً
-        const ROW_HEIGHT = 22; // زيادة المسافة رأسياً بين السطور
+        const GAP = 15;
+        const ROW_HEIGHT = 22;
         const SIZES = [9, 10, 11, 12];
         const BG = [6/255, 2/255, 8/255];
         const FLASH = [1.0, 0.78, 0.78];
@@ -37,10 +67,10 @@
 
         const PHRASES = [
             "I love you", "Seni seviyorum", "Te amo", "Je t'aime",
-            "Ich liebe dich", "Ti amo", "Ilove you", "Я тебя люблю",
-            "사랑해", "愛してる", "Ilove you", "मैं तुमसे प्यार करता हूँ",
+            "Ich liebe dich", "Ti amo", "Eu te amo", "Я тебя люблю",
+            "사랑해", "愛してる", "我爱你", "मैं तुमसे प्यार करता हूँ",
             "Σ' αγαπώ", "Ik hou van jou", "Jag älskar dig", "Kocham cię",
-            " I love you ", "Anh yêu em", "Aku cinta kamu", "Я тебе кохаю"
+            "ฉันรักเธอ", "Anh yêu em", "Aku cinta kamu", "Я тебе кохаю"
         ];
 
         function resize() {
@@ -195,7 +225,6 @@
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
-            // رسم الكلمات الثابتة المستقرة
             for (let p of settledItems) {
                 let col = p.color;
                 if (p.shimmer > 0) {
@@ -216,7 +245,6 @@
                 if (itemsIter >= ORDER.length) isSpawning = false;
             }
 
-            // التأثيرات الضوئية الشفافة للكلمات في طريقها للهبوط
             for (let i = activeItems.length - 1; i >= 0; i--) {
                 let p = activeItems[i];
                 p.f += 1;
@@ -240,7 +268,6 @@
                 }
             }
 
-            // تأثير الوميض العشوائي للكلمات المستقرة
             if (!isSpawning && Math.random() < 0.08 && settledItems.length > 0) {
                 let rItem = settledItems[Math.floor(Math.random() * settledItems.length)];
                 rItem.shimmer = 1.0;
@@ -251,10 +278,11 @@
 
         document.getElementById('overlay').addEventListener('click', function() {
             this.style.opacity = '0';
-            setTimeout(() => this.style.display = 'none', 500);
+            setTimeout(() => this.style.display = 'none', 600);
             
             ORDER = build();
-            document.getElementById('bgMusic').play().catch(() => {});
+            const music = document.getElementById('bgMusic');
+            music.play().catch(e => console.log("تعذر تشغيل الصوت، التأكد من اسم الملف"));
             draw();
         });
     </script>
