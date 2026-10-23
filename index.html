@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Love Heart</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #060208;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #startOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(6, 2, 8, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            cursor: pointer;
+            color: #e60d2e;
+            font-size: 28px;
+            font-weight: bold;
+            transition: opacity 0.5s ease;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- المتصفحات الحديثة تمنع تشغيل الصوت تلقائياً، لذلك نحتاج لضغطة مبدئية لبدء العرض -->
+    <div id="startOverlay">اضغط هنا لتشغيل الأغنية وعرض القلب ❤️</div>
+    
+    <canvas id="heartCanvas"></canvas>
+    
+    <!-- مشغل الصوت المخفي -->
+    <audio id="bgMusic" src="song.mp3" loop></audio>
+
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, cx, cy;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            cx = width / 2;
+            cy = height / 2;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const phrases = [
+            "I love you", "Seni seviyorum", "Te amo", "Je t'aime",
+            "Ich liebe dich", "Ti amo", "Eu te amo", "Я тебя люблю",
+            "사랑해", "愛してる", "我爱你", "मैं तुमसे प्यार करता हूँ",
+            "Σ' αγαπώ", "Ik hou van jou", "Jag älskar dig", "Kocham cię",
+            "ฉันรักเธอ", "Anh yêu em", "Aku cinta kamu", "Я тебе кохаю"
+        ];
+
+        const particles = [];
+        const particleCount = 450;
+
+        // معادلة رسم القلب الرياضية
+        function heartPoint(t) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            return { x: x, y: -y }; 
+        }
+
+        // إنشاء الكلمات وتوزيعها داخل حدود القلب
+        for (let i = 0; i < particleCount; i++) {
+            const t = Math.random() * Math.PI * 2;
+            const r = Math.sqrt(Math.random()); 
+            const point = heartPoint(t);
+            
+            // تكبير حجم القلب ليتناسب مع الشاشة
+            const scale = Math.min(width, height) / 45;
+            const targetX = cx + (point.x * scale * r);
+            const targetY = cy + (point.y * scale * r) - 20;
+
+            particles.push({
+                text: phrases[Math.floor(Math.random() * phrases.length)],
+                x: Math.random() * width,    // نقطة البداية العشوائية
+                y: Math.random() * height,
+                tx: targetX,                 // النقطة الهدف (داخل القلب)
+                ty: targetY,
+                size: Math.random() * 10 + 9, 
+                speed: Math.random() * 0.03 + 0.01,
+                // تدرجات الألوان بين الوردي والأحمر القرمزي
+                color: `hsl(${340 + Math.random() * 15}, 100%, ${45 + Math.random() * 25}%)`,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
+        function animate() {
+            // رسم خلفية شفافة قليلاً لعمل تأثير ذيل للحركة (Trail effect)
+            ctx.fillStyle = 'rgba(6, 2, 8, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                // تحريك الكلمات نحو النقطة الهدف بحركة انسيابية
+                p.x += (p.tx - p.x) * p.speed;
+                p.y += (p.ty - p.y) * p.speed;
+
+                // تأثير الوميض (Shimmer)
+                p.phase += 0.03;
+                const alpha = 0.4 + Math.sin(p.phase) * 0.6;
+
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = p.color;
+                ctx.font = `bold ${p.size}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText(p.text, p.x, p.y);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // بدء التشغيل عند النقر
+        document.getElementById('startOverlay').addEventListener('click', function() {
+            this.style.opacity = '0';
+            setTimeout(() => this.style.display = 'none', 500);
+            
+            const music = document.getElementById('bgMusic');
+            music.volume = 0.7;
+            music.play().catch(e => console.log("تحتاج للتأكد من وجود ملف الأغنية"));
+            
+            animate();
+        });
+    </script>
+</body>
+</html>
